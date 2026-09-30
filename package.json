@@ -1,0 +1,16 @@
+{
+  "name": "lighthouse-island-guide",
+  "version": "1.0.0",
+  "description": "海岛灯塔导览站：潮汐/船班/封闭数据驱动的可追溯行程系统",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server/server.js",
+    "init-db": "node scripts/init-db.js",
+    "ingest": "node scripts/ingest.js",
+    "demo": "bash scripts/demo.sh",
+    "test": "node --test test/"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "^0.2.12"
+  }
+}

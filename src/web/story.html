@@ -1,0 +1,41 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>故事页 · 海岛灯塔导览站</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div id="nav"></div><main>
+  <div class="notice">本页内容来自<strong>可替换的示例数据源</strong>，仅作导览演示；<strong>不保证现实交通可用</strong>，出行前请核对官方实时信息。</div>
+  <div class="card"><h2>灯台岛与百年灯塔</h2>
+    <p class="muted">沿潮间堤道步行登岛是最具特色的体验——但堤道只在低潮窗口露出水面。本站所有潮汐可通行结论都要求潮位站坐标、时区与适用范围匹配地点，缺测时一律不推断可通行。</p>
+    <div id="places"></div></div>
+  <div class="grid2">
+    <div class="card"><h2>⛴️ 交通班次</h2><div id="ferries"></div></div>
+    <div class="card"><h2>🌊 潮位与适用范围</h2><div id="tides"></div></div>
+  </div>
+  <div class="card"><h2>📚 开放资料</h2><div id="materials"></div></div>
+</main>
+<script type="module">
+import { NAV, api, esc } from '/js/common.js';
+document.getElementById('nav').innerHTML = NAV;
+const data = await api('/api/story');
+const kindName = { pier:'码头', viewpoint:'观景点', causeway:'潮间堤道', facility:'服务设施', island:'岛屿', station:'潮位站' };
+document.getElementById('places').innerHTML = `<table><tr><th>地点</th><th>类型</th><th>坐标 / 时区</th><th>绑定潮位站</th><th>简介</th></tr>` +
+  data.places.map(p => `<tr><td>${esc(p.name)}<div class="muted">${esc(p.id)}</div></td>
+    <td>${kindName[p.kind]||p.kind}</td>
+    <td>${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}<div class="muted">${esc(p.tz)}</div></td>
+    <td>${p.tide_station_id ? `<code>${esc(p.tide_station_id)}</code>` : '<span class="muted">无</span>'}</td>
+    <td class="muted">${esc(p.description)}</td></tr>`).join('') + '</table>';
+document.getElementById('ferries').innerHTML = `<table><tr><th>班次</th><th>路线</th><th>去→到</th><th>状态</th><th>来源</th></tr>` +
+  data.ferries.map(f => `<tr><td><code>${esc(f.id)}</code><br><span class="muted">${f.mode}</span></td>
+    <td>${esc(f.route_name)}</td><td class="muted">${String(f.dep_date).slice(0,10)} ${String(f.dep_local).slice(0,5)}<br>→ ${String(f.arr_local).slice(0,5)}</td>
+    <td>${f.status==='scheduled'?'正常':f.status==='cancelled'?'<b style="color:var(--bad)">已取消</b>':'延误'}</td>
+    <td class="muted">${esc(f.source_key)}<br>v#${f.source_version_id}</td></tr>`).join('') + '</table>';
+document.getElementById('tides').innerHTML = (data.stations||[]).map(s => `
+  <div class="ev"><b>${esc(s.name)}</b> <code>${esc(s.id)}</code>
+    <div class="muted">坐标 ${s.lat.toFixed(4)}, ${s.lng.toFixed(4)} · 时区 ${esc(s.tz)}</div>
+    <div class="muted">适用范围：${(s.applies_to||[]).map(esc).join('、')}</div>
+    <details><summary>潮位点（${s.points?.length||0} 条，UTC）</summary>
+      <div class="muted">${(s.points||[]).slice(0,48).map(p=>`${String(p.ts_utc).slice(5,16).replace('T',' ')} ${p.height_m}m`).join(' · ')}</div></details></div>`).join('') || '<p class="muted">暂无潮位数据</p>';
+document.getElementById('materials').innerHTML = `<table><tr><th>资料</th><th>类型</th><th>许可 / 发布方</th><th>链接</th></tr>` +
+  data.materials.map(m => `<tr><td><b>${esc(m.title)}</b><div class="muted">${esc(m.summary)}</div></td>
+    <td>${esc(m.kind)}</td><td>${esc(m.license||'')}<div class="muted">${esc(m.publisher||'')}</div></td>
+    <td>${m.url?`<a href="${esc(m.url)}" class="muted">${esc(m.url)}</a>`:''}</td></tr>`).join('') + '</table>';
+</script></body></html>

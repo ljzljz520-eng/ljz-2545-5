@@ -1,0 +1,10 @@
+{
+  "kind": "closure",
+  "effective_from": "2026-10-01",
+  "tz": "Asia/Shanghai",
+  "closures": [
+    { "id": "C-DRY", "place_id": "viewpoint-cliff",
+      "start_local": "2026-10-03T00:00", "end_local": "2026-10-05T23:59",
+      "reason": "海蚀崖护栏检修（与 10-01 行程不重叠的对照封闭）" }
+  ]
+}

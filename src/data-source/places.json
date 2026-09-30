@@ -1,0 +1,17 @@
+{
+  "kind": "place",
+  "effective_from": "2026-10-01",
+  "places": [
+    { "id": "pier-mainland", "name": "东港码头", "kind": "pier", "lat": 29.9021, "lng": 122.3284, "tz": "Asia/Shanghai", "description": "大陆侧客轮码头，设有候船室与接驳巴士站。" },
+    { "id": "pier-island", "name": "灯台岛码头", "kind": "pier", "lat": 29.9582, "lng": 122.4215, "tz": "Asia/Shanghai", "description": "灯台岛唯一客运码头。" },
+    { "id": "causeway-north", "name": "北堤入口", "kind": "causeway", "lat": 29.9610, "lng": 122.4255, "tz": "Asia/Shanghai",
+      "tide_station_id": "ts-causeway", "walk_threshold_m": 0.7,
+      "description": "通往灯台岛灯塔的潮间堤道入口，高潮位淹没，仅低潮窗口可步行。" },
+    { "id": "viewpoint-lighthouse", "name": "百年灯塔观景台", "kind": "viewpoint", "lat": 29.9638, "lng": 122.4301, "tz": "Asia/Shanghai", "tide_station_id": "ts-causeway",
+      "description": "1898 年建成的铸铁灯塔，俯瞰东海航道。" },
+    { "id": "viewpoint-cliff", "name": "东崖观海点", "kind": "viewpoint", "lat": 29.9490, "lng": 122.4390, "tz": "Asia/Shanghai",
+      "description": "海蚀崖观景点，风浪大时注意安全。" },
+    { "id": "facility-center", "name": "游客服务中心", "kind": "facility", "lat": 29.9560, "lng": 122.4190, "tz": "Asia/Shanghai",
+      "description": "展陈、简餐与开放资料取阅点。" }
+  ]
+}

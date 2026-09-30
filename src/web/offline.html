@@ -1,0 +1,25 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>离线包 · 海岛灯塔导览站</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div id="nav"></div><main>
+  <div class="card"><h2>离线包</h2>
+    <div class="notice">离线包显示<strong>冻结日期</strong>与<strong>更新缺口</strong>；它是一份历史快照，<strong>不保证现实交通可用</strong>。</div>
+    <label>冻结日期</label><input id="fd" value="2026-09-30">
+    <label>包含行程 #</label><input id="iid" style="width:70px" placeholder="可选">
+    <button id="build">生成离线包</button>
+    <button id="latest" class="ghost">查看最新离线包</button>
+    <pre id="out" class="ev" style="max-height:60vh;overflow:auto"></pre>
+  </div>
+</main>
+<script type="module">
+import { NAV, api, esc } from '/js/common.js';
+document.getElementById('nav').innerHTML = NAV;
+const show = (d) => document.getElementById('out').textContent = JSON.stringify(d,null,2);
+document.getElementById('build').onclick = async () => {
+  const iid = Number(document.getElementById('iid').value);
+  show(await api('/api/offline-bundle',{method:'POST',body:{ frozen_date:document.getElementById('fd').value, itinerary_id: iid||null }}));
+};
+document.getElementById('latest').onclick = async () => {
+  try { show(await api('/api/offline-bundle/latest')); } catch(e){ alert(e.message); }
+};
+</script></body></html>

@@ -1,0 +1,12 @@
+{
+  "kind": "material",
+  "effective_from": "2026-10-01",
+  "materials": [
+    { "id": "M1", "title": "灯台岛灯塔历史图册", "kind": "media", "url": "https://example.org/open/lighthouse-atlas.pdf",
+      "license": "CC BY 4.0", "publisher": "东海航海遗产促进会", "summary": "1898–2000 灯塔老照片与结构图。" },
+    { "id": "M2", "title": "岛屿公共交通 GTFS 样例", "kind": "dataset", "url": "https://example.org/open/island-transit-gtfs.zip",
+      "license": "CC0 1.0", "publisher": "示例开放数据平台", "summary": "船班与接驳巴士的机器可读时刻数据。" },
+    { "id": "M3", "title": "东海近岸潮汐表(节选)", "kind": "dataset", "url": "https://example.org/open/tides-east-sea.csv",
+      "license": "CC BY 4.0", "publisher": "示例海洋观测联盟", "summary": "逐时潮位预测，含潮位站坐标与适用范围说明。" }
+  ]
+}

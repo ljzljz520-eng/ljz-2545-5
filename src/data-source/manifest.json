@@ -1,0 +1,15 @@
+{
+  "source_key": "demo-island-east-2026Q4",
+  "schema_version": "1.0",
+  "tz": "Asia/Shanghai",
+  "utc_offset_min": 480,
+  "generated_at": "2026-09-28T09:00:00+08:00",
+  "files": {
+    "ferry": "ferry-2026-10.json",
+    "closures": "closures-2026-10.json",
+    "tides": "tides-2026-10.json",
+    "places": "places.json",
+    "materials": "materials.json"
+  },
+  "notice": "示例数据源，可整体替换；不保证现实交通可用"
+}

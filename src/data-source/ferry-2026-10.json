@@ -1,0 +1,95 @@
+{
+  "kind": "ferry",
+  "effective_from": "2026-10-01",
+  "tz": "Asia/Shanghai",
+  "trips": [
+    {
+      "id": "F101",
+      "mode": "ferry",
+      "route_name": "东港—灯台岛(去程)",
+      "origin_id": "pier-mainland",
+      "destination_id": "pier-island",
+      "dep_date": "2026-10-01",
+      "dep_local": "06:30",
+      "arr_local": "07:15",
+      "status": "scheduled"
+    },
+    {
+      "id": "F102",
+      "mode": "ferry",
+      "route_name": "东港—灯台岛(加班去程)",
+      "origin_id": "pier-mainland",
+      "destination_id": "pier-island",
+      "dep_date": "2026-10-01",
+      "dep_local": "09:30",
+      "arr_local": "10:15",
+      "status": "scheduled"
+    },
+    {
+      "id": "F201",
+      "mode": "ferry",
+      "route_name": "灯台岛—东港(回程)",
+      "origin_id": "pier-island",
+      "destination_id": "pier-mainland",
+      "dep_date": "2026-10-01",
+      "dep_local": "17:20",
+      "arr_local": "18:05",
+      "status": "scheduled"
+    },
+    {
+      "id": "F202",
+      "mode": "ferry",
+      "route_name": "灯台岛—东港(晚班回程)",
+      "origin_id": "pier-island",
+      "destination_id": "pier-mainland",
+      "dep_date": "2026-10-01",
+      "dep_local": "19:30",
+      "arr_local": "20:15",
+      "status": "scheduled"
+    },
+    {
+      "id": "B31",
+      "mode": "bus",
+      "route_name": "码头—北堤入口接驳",
+      "origin_id": "pier-island",
+      "destination_id": "causeway-north",
+      "dep_date": "2026-10-01",
+      "dep_local": "07:35",
+      "arr_local": "08:00",
+      "status": "scheduled"
+    },
+    {
+      "id": "B32",
+      "mode": "bus",
+      "route_name": "北堤入口—码头接驳",
+      "origin_id": "causeway-north",
+      "destination_id": "pier-island",
+      "dep_date": "2026-10-01",
+      "dep_local": "16:50",
+      "arr_local": "17:10",
+      "status": "scheduled"
+    },
+    {
+      "id": "F900",
+      "mode": "ferry",
+      "route_name": "东港—灯台岛(傍晚去程)",
+      "origin_id": "pier-mainland",
+      "destination_id": "pier-island",
+      "dep_date": "2026-10-01",
+      "dep_local": "18:30",
+      "arr_local": "19:15",
+      "status": "scheduled"
+    },
+    {
+      "id": "F901",
+      "mode": "ferry",
+      "route_name": "灯台岛—东港(跨午夜末班)",
+      "origin_id": "pier-island",
+      "destination_id": "pier-mainland",
+      "dep_date": "2026-10-01",
+      "dep_local": "23:30",
+      "arr_local": "00:20",
+      "status": "scheduled"
+    }
+  ]
+}

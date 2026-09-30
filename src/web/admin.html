@@ -1,0 +1,85 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>后台 · 海岛灯塔导览站</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div id="nav"></div><main>
+  <div class="card"><h2>数据源后台</h2>
+    <p class="muted">系统从<strong>可替换的示例数据源</strong>接收船班与封闭记录；每次摄入生成不可变来源版本，PG 保存版本及对行程段的影响关系。</p>
+    <div>
+      <button id="ingest">从示例数据源目录摄入/复查</button>
+      <button id="refresh" class="ghost">刷新</button>
+    </div>
+    <div id="ingestReport"></div>
+  </div>
+  <div class="card">
+    <h2>测试场景注入（直接摄入内存 bundle）</h2>
+    <div class="muted" style="margin-bottom:8px">以下按钮构造“新来源”的覆盖数据，用于：船班取消、跨源矛盾、地点改坐标、封闭、跨日接驳。</div>
+    <button data-scn="cancel">① 船班 F101 取消（新来源）</button>
+    <button data-scn="conflict">② 第二来源与 F101 时刻矛盾</button>
+    <button data-scn="coords">③ 潮位站改坐标导致不匹配</button>
+    <button data-scn="closure">④ 北堤临时封闭（仅影响步行段）</button>
+    <button data-scn="tidegap">⑤ 潮位缺测（删除覆盖→不可推断）</button>
+    <div id="scnOut" class="muted" style="margin-top:8px"></div>
+  </div>
+  <div class="card"><h2>不可变来源版本</h2><div id="versions"></div></div>
+  <div class="card"><h2>影响关系（数据变更 → 行程段）</h2><div id="impacts"></div></div>
+  <div class="card"><h2>当前封闭记录</h2><div id="closures"></div></div>
+</main>
+<script type="module">
+import { NAV, api, esc } from '/js/common.js';
+document.getElementById('nav').innerHTML = NAV;
+const out = (id, h) => document.getElementById(id).innerHTML = h;
+async function loadAll() {
+  const vs = await api('/api/admin/versions');
+  out('versions', `<table><tr><th>#</th><th>来源</th><th>类型</th><th>生效日</th><th>摄入时间</th><th>指纹</th><th>取代</th><th>影响数</th></tr>` +
+    vs.map(v=>`<tr><td>${v.id}</td><td>${esc(v.source_key)}</td><td>${v.kind}</td><td>${v.effective_from?String(v.effective_from).slice(0,10):'—'}</td>
+      <td class="muted">${v.fetched_at}</td><td><code>${esc(v.content_hash)}</code></td><td>${v.supersedes_id??'—'}</td><td>${v.impacts}</td></tr>`).join('')+'</table>');
+  const is = await api('/api/admin/impacts');
+  out('impacts', is.length? `<table><tr><th>#</th><th>版本</th><th>对象</th><th>影响</th><th>行程</th><th>段</th><th>细节</th></tr>` +
+    is.map(i=>`<tr><td>${i.id}</td><td>#${i.caused_by_version_id}</td><td>${i.subject_type}:${esc(i.subject_ref)}</td>
+      <td><span class="badge b-warn">${esc(i.impact_kind)}</span></td><td>${i.itinerary_id??'—'}</td><td>${i.segment_id??'—'}</td>
+      <td class="muted"><pre style="margin:0">${esc(JSON.stringify(i.detail))}</pre></td></tr>`).join('')+'</table>' : '<p class="muted">暂无（先在行程页生成行程并重算）</p>');
+  const cs = await api('/api/admin/closures');
+  out('closures', `<table><tr><th>id</th><th>地点</th><th>UTC 时段</th><th>原因</th><th>版本</th></tr>` +
+    cs.map(c=>`<tr><td>${esc(c.id)}</td><td>${esc(c.place_id)}</td><td class="muted">${c.start_utc} ~ ${c.end_utc}</td><td>${esc(c.reason)}</td><td>#${c.source_version_id}</td></tr>`).join('')+'</table>');
+}
+document.getElementById('ingest').onclick = async () => {
+  const r = await api('/api/admin/ingest', { method:'POST', body:{} });
+  out('ingestReport', `<pre class="ev">${esc(JSON.stringify(r,null,1))}</pre>`);
+  await loadAll();
+};
+document.getElementById('refresh').onclick = loadAll;
+
+const BASE = 'demo-island-east-2026Q4';
+async function scenario(kind) {
+  let source_key, bundle;
+  if (kind==='cancel') { source_key = 'ferry-operator-live';
+    bundle = { source_key, tz:'Asia/Shanghai', utc_offset_min:480, ferry:{ kind:'ferry', effective_from:'2026-10-01', tz:'Asia/Shanghai', trips:[
+      trip('F101','ferry','东港—灯台岛(去程)','pier-mainland','pier-island','08:30','09:15','cancelled') ] } };
+  }
+  if (kind==='conflict') { source_key = 'ferry-operator-alt';
+    bundle = { source_key, tz:'Asia/Shanghai', utc_offset_min:480, ferry:{ kind:'ferry', effective_from:'2026-10-01', tz:'Asia/Shanghai', trips:[
+      trip('F101','ferry','东港—灯台岛(去程)','pier-mainland','pier-island','09:05','09:50','scheduled') ] } };
+  }
+  if (kind==='coords') { source_key = 'tide-bureau-corrected';
+    bundle = { source_key, tz:'Asia/Shanghai', utc_offset_min:480, tides:{ kind:'tide', effective_from:'2026-10-01', tz:'Asia/Shanghai',
+      stations:[{ id:'ts-causeway', name:'北堤潮位站(迁站)', lat:30.12, lng:122.66, tz:'Asia/Shanghai',
+        applies_to:['causeway-north','viewpoint-lighthouse'], max_match_distance_m:800 }], points:[] } };
+  }
+  if (kind==='closure') { source_key = 'parks-ops-live';
+    bundle = { source_key, tz:'Asia/Shanghai', utc_offset_min:480, closures:{ kind:'closure', effective_from:'2026-10-01', tz:'Asia/Shanghai', closures:[
+      { id:'C-NEW-1', place_id:'causeway-north', start_local:'2026-10-01T10:00', end_local:'2026-10-01T12:30', reason:'堤道应急检修' } ] } };
+  }
+  if (kind==='tidegap') { source_key = 'tide-bureau-gap';
+    bundle = { source_key, tz:'Asia/Shanghai', utc_offset_min:480, tides:{ kind:'tide', effective_from:'2026-10-01', tz:'Asia/Shanghai',
+      stations:[{ id:'ts-causeway', name:'北堤潮位站(缺测)', lat:29.9608, lng:122.4258, tz:'Asia/Shanghai',
+        applies_to:['causeway-north','viewpoint-lighthouse'], max_match_distance_m:800 }],
+      points:[{ ts:'2026-10-01T00:00:00.000Z', height_m:0.45, kind:'prediction' }] } };
+  }
+  const r = await api('/api/admin/ingest-bundle', { method:'POST', body:{ source_key, bundle } });
+  document.getElementById('scnOut').innerHTML = `<pre class="ev">${esc(JSON.stringify(r,null,1))}</pre>`;
+  await loadAll();
+}
+function trip(id,mode,route,o,d,dep,arr,status){return {id,mode,route_name:route,origin_id:o,destination_id:d,dep_date:'2026-10-01',dep_local:dep,arr_local:arr,status};}
+document.querySelectorAll('[data-scn]').forEach(b => b.onclick = () => scenario(b.dataset.scn));
+await loadAll();
+</script></body></html>

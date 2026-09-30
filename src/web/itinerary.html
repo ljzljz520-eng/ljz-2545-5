@@ -1,0 +1,92 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>行程 · 海岛灯塔导览站</title><link rel="stylesheet" href="/css/app.css"></head>
+<body><div id="nav"></div><main>
+  <div class="card">
+    <h2>行程工作台</h2>
+    <p class="muted">一次生成会冻结静态行程（<span class="badge b-pass">static</span>）；摄入新数据后可做<strong>局部重算</strong>（<span class="badge b-warn">current</span>）。
+      锁定的段不会被自动改写，只会标注对接驳时间的连带影响。</p>
+    <div>
+      <label>模板</label><select id="tpl"></select>
+      <label>日期</label><input id="date" value="2026-10-01">
+      <button id="create">一次生成静态行程</button>
+      <select id="its"></select>
+      <button id="load" class="ghost">载入</button>
+      <button id="recompute">↻ 数据变更后局部重算</button>
+      <button id="rollback" class="ghost">⟲ 回滚到静态快照</button>
+    </div>
+    <div id="meta" class="muted" style="margin-top:8px"></div>
+  </div>
+  <div id="segments"></div>
+</main>
+<script type="module">
+import { NAV, api, esc, badge, toLocal } from '/js/common.js';
+document.getElementById('nav').innerHTML = NAV;
+const tpls = await api('/api/templates');
+document.getElementById('tpl').innerHTML = Object.entries(tpls).map(([k,v])=>`<option value="${k}">${k}（${v.slots}段 · ${v.tz}）</option>`).join('');
+async function refreshList(sel) {
+  const list = await api('/api/itineraries');
+  document.getElementById('its').innerHTML = list.map(x=>`<option value="${x.id}" ${sel==x.id?'selected':''}>#${x.id} ${x.plan_date}${x.rollback_to_id?` (回滚自#${x.rollback_to_id})`:''}</option>`).join('');
+  return list;
+}
+let cur = null;
+document.getElementById('create').onclick = async () => {
+  const r = await api('/api/itineraries', { method:'POST', body:{ template_key: tpl.value, date: document.getElementById('date').value } });
+  await refreshList(r.id); await load(r.id);
+};
+document.getElementById('load').onclick = () => load(Number(document.getElementById('its').value));
+document.getElementById('recompute').onclick = async () => {
+  const r = await api(`/api/itineraries/${cur.id}/recompute`, { method:'POST' });
+  alert(`新版本 ${r.new_versions.length} 个；变更槽位 ${r.change_log.length} 项`);
+  await load(cur.id);
+};
+document.getElementById('rollback').onclick = async () => {
+  const r = await api(`/api/itineraries/${cur.id}/rollback`, { method:'POST', body:{ reason:'用户在界面选择回滚旧缓存' } });
+  await refreshList(r.new_id); await load(r.new_id);
+};
+async function load(id) {
+  if (!id) return;
+  cur = await api(`/api/itineraries/${id}`);
+  document.getElementById('meta').innerHTML =
+    `行程 #${cur.id} · 日期 ${cur.plan_date} · 时区 ${cur.tz} · 冻结于 ${cur.frozen_at} · 数据版本水位 ${JSON.stringify(cur.version_high_water)}` +
+    (cur.note?` · ${esc(cur.note)}`:'');
+  document.getElementById('segments').innerHTML = cur.segments.map(renderSeg).join('');
+  bindSeg();
+}
+function renderSeg(s) {
+  const cs = s.current.status;
+  return `<div class="seg ${cs}">
+    <div><b>${s.idx+1}. ${esc(s.title)}</b> <span class="pill">${s.type}</span>
+      ${s.schedule_id?`<code>${esc(s.schedule_id)}</code>`:''} ${s.place_id?`<span class="muted">@${esc(s.place_id)}</span>`:''}
+      <span style="float:right">静态 ${badge(s.static.status)} 当前 ${badge(cs)}</span></div>
+    <div class="muted">静态时间：${toLocal(s.static.start)} → ${toLocal(s.static.end)} ｜ 当前时间：${toLocal(s.current.start)} → ${toLocal(s.current.end)}</div>
+    ${cs==='pending_adjustment'||cs==='infeasible' ? `<div style="margin-top:6px">${(s.current.infeasible_reasons||[]).map(r=>`⚠️ <span style="color:var(--warn)">${esc(r.message)}</span>`).join('<br>')}</div>`:''}
+    ${s.current.adjust_advice?`<div class="muted">🔗 接驳连带：${esc(s.current.adjust_advice)}</div>`:''}
+    ${(s.current.alternatives||[]).length?`<div>${(s.current.alternatives||[]).map((a,i)=>`<div class="alt">
+        候选 ${i+1}：${a.kind==='schedule'?`班次 <code>${esc(a.schedule_id)}</code> ${esc(a.dep)} → ${esc(a.arr)}`:`低潮窗口 ${esc(a.window_local?.[0])} ~ ${esc(a.window_local?.[1])}`}
+        <div class="muted">${esc(a.note)}</div>
+        <button data-act="alt" data-slot="${s.slot_key}" data-i="${i}">采用此候选</button></div>`).join('')}</div>`:''}
+    <div style="margin-top:6px">
+      <button data-act="lock" data-slot="${s.slot_key}" ${s.current.locked?'disabled':''}>${s.current.locked?'🔒 已锁定':'锁定此段'}</button>
+    </div>
+    <details><summary>采用条件与证据链（${s.evidence.length}）— 可追溯到来源版本</summary>
+      ${s.evidence.map(e=>`<div class="ev"><div class="row">${badge(e.verdict)} <code>${esc(e.type)}</code>
+        <span class="muted">scope=${e.scope}${e.source_version_id?` · 来源版本 #${e.source_version_id}`:''}${e.ref?` · ${esc(e.ref)}`:''}</span></div>
+        <div class="muted"><pre style="white-space:pre-wrap;margin:4px 0 0">${esc(JSON.stringify(e.detail,null,1))}</pre></div></div>`).join('')}
+    </details>
+  </div>`;
+}
+function bindSeg() {
+  document.querySelectorAll('[data-act="lock"]').forEach(b => b.onclick = async () => {
+    await api(`/api/itineraries/${cur.id}/segments/${b.dataset.slot}/lock`, { method:'POST', body:{ reason:'用户在界面锁定' } });
+    await load(cur.id);
+  });
+  document.querySelectorAll('[data-act="alt"]').forEach(b => b.onclick = async () => {
+    const seg = cur.segments.find(s=>s.slot_key===b.dataset.slot);
+    await api(`/api/itineraries/${cur.id}/segments/${b.dataset.slot}/alternative`,
+      { method:'POST', body:{ candidate: seg.current.alternatives[Number(b.dataset.i)] } });
+    await load(cur.id);
+  });
+}
+await refreshList();
+</script></body></html>
