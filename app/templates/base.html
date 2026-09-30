@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}海岛灯塔导览站{% endblock %}</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="beam">✦</span> 海岛灯塔导览站</div>
+  <nav>
+    <a href="/">故事页</a>
+    <a href="/plan">行程</a>
+    <a href="/offline">离线包</a>
+    <a href="/admin">后台</a>
+    <a href="/docs-site">设计文档</a>
+  </nav>
+</header>
+<main class="container">
+{% block body %}{% endblock %}
+</main>
+<footer class="footer">
+  海岛灯塔导览站 · 开放资料 CC BY 4.0 · 离线快照不保证现实交通可用
+</footer>
+<script src="/static/app.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

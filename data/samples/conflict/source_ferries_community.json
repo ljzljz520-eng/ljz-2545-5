@@ -1,0 +1,21 @@
+{
+  "source_key": "ferry.community_board",
+  "revision": "2026-10-03-r1",
+  "kind": "mixed",
+  "priority": 5,
+  "payload": {
+    "ferries": [
+      {
+        "mode": "ferry",
+        "route_code": "F1",
+        "date": "2026-10-03",
+        "depart_place": "MAIN_DOCK",
+        "arrive_place": "ISLAND_DOCK",
+        "depart_at": "2026-10-03T08:30:00+08:00",
+        "arrive_at": "2026-10-03T09:20:00+08:00",
+        "status": "scheduled"
+      }
+    ],
+    "shuttles": []
+  }
+}

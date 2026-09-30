@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+psycopg2
+pytest
+httpx
+jinja2
+python-multipart
+pyyaml
+markdown

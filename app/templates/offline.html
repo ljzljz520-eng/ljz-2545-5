@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}离线包 · 海岛灯塔导览站{% endblock %}
+{% block body %}
+<h1>离线包（冻结快照）</h1>
+<div class="notice">⚠️ 离线包是冻结日期的历史快照，<b>不保证现实交通可用</b>。潮汐、班次与封闭情况可能已变化，出行前须重新同步。</div>
+
+{% if not bundle %}
+<div class="card">日期 {{ date }} 尚无离线包。请到「后台」冻结生成。</div>
+{% else %}
+<div class="card freeze">
+  <div class="muted">冻结日期（UTC）</div>
+  <div class="big">{{ bundle.frozen_at }}</div>
+  <div>覆盖行程日：<b>{{ bundle.covers_date }}</b></div>
+  <div class="muted">校验 SHA256：{{ bundle.checksum if bundle.checksum else '见登记表' }}</div>
+</div>
+
+<div class="card">
+  <h3>冻结的来源版本</h3>
+  <table>
+    <tr><th>来源</th><th>版本</th><th>来源版本#</th><th>接收时间</th></tr>
+    {% for v in bundle.versions %}
+    <tr><td>{{ v.source_key }}</td><td>{{ v.revision }}</td><td>#{{ v.version_id }}</td>
+        <td class="coord">{{ v.received_at }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<div class="card">
+  <h3>更新缺口（自冻结以来）</h3>
+  {% if not bundle.update_gap %}
+    <p class="muted">无缺口：冻结后没有更新的来源。</p>
+  {% else %}
+    <p style="color:#9c5a13"><b>存在更新缺口，以下数据在冻结后已变化：</b></p>
+    <table>
+      <tr><th>来源</th><th>冻结版本</th><th>新版本</th><th>更新时间</th></tr>
+      {% for g in bundle.update_gap %}
+      <tr><td>{{ g.source_key }}</td><td>{{ g.frozen_revision }}</td>
+          <td><b>{{ g.newer_revision }}</b></td><td class="coord">{{ g.newer_at }}</td></tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+</div>
+
+<details class="card"><summary>查看冻结的班次 / 潮汐 / 封闭原始数据</summary>
+<pre>{{ { 'transports': bundle.transports, 'tides': bundle.tides, 'closures': bundle.closures } | tojson(indent=2) }}</pre>
+</details>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}故事 · 海岛灯塔导览站{% endblock %}
+{% block body %}
+<h1>北礁灯塔与五虎礁 · 海岛故事</h1>
+<p class="muted">本站按「交通 → 观景点 → 开放资料」组织，所有展示内容均标注采用的来源版本。</p>
+
+<div class="notice">⚠️ {{ notice }}</div>
+
+<h2>如何到达（交通）</h2>
+<div class="card">
+  <p>班次来自航运官方来源；社区公告若与官方矛盾，系统按来源优先级裁决并在后台留痕。
+     潮汐、班次随时变化，出发前请在「行程」页重新同步数据。</p>
+  <table>
+    <tr><th>方式</th><th>线路</th><th>出发</th><th>到达</th><th>状态</th><th>来源#</th></tr>
+    {% for t in transports %}
+    <tr><td>{{ '船班' if t.mode=='ferry' else '接驳车' }}</td>
+        <td><b>{{ t.route_code }}</b><br><span class="muted">{{ t.from_name }} → {{ t.to_name }}</span></td>
+        <td>{{ t.depart_at }}</td><td>{{ t.arrive_at }}</td>
+        <td>{% if t.status=='scheduled' %}<span class="badge feasible">计划</span>
+            {% elif t.status=='cancelled' %}<span class="badge infeasible">取消</span>
+            {% else %}<span class="badge pending_adjustment">{{ t.status }}</span>{% endif %}</td>
+        <td class="coord">#{{ t.source_version_id }}</td></tr>
+    {% endfor %}
+  </table>
+</div>
+
+<h2>地点与观景点</h2>
+<div class="grid">
+  {% for p in places %}
+  <div class="card">
+    <h3>{{ p.name }} <span class="pill">{{ p.kind }}</span></h3>
+    <div class="coord">{{ '%.5f'|format(p.lat) }}, {{ '%.5f'|format(p.lon) }} · {{ p.timezone }}</div>
+    {% if p.story %}<p>{{ p.story }}</p>{% endif %}
+    {% if p.viewpoints %}
+      <div class="tagrow">
+      {% for vp in p.viewpoints %}
+        <div style="margin:6px 0"><b>观景：{{ vp.name }}</b><br><span class="muted">{{ vp.desc }}</span></div>
+      {% endfor %}
+      </div>
+    {% endif %}
+    {% if p.tide_point_code %}
+      <p class="muted">↳ 受潮汐约束，绑定验潮站 <span class="pill">{{ p.tide_point_code }}</span></p>
+    {% endif %}
+    <div class="muted">来源版本 #{{ p.source_version_id }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<h2>验潮站与适用范围</h2>
+<div class="card">
+<table>
+  <tr><th>验潮站</th><th>坐标 / 时区</th><th>适用地点</th><th>安全水位</th><th>来源</th></tr>
+  {% for t in tide_points %}
+  <tr>
+    <td><b>{{ t.name }}</b><br><span class="coord">{{ t.code }}</span></td>
+    <td class="coord">{{ '%.5f'|format(t.lat) }}, {{ '%.5f'|format(t.lon) }}<br>{{ t.timezone }}</td>
+    <td>{% for a in t.applies_to %}<span class="pill">{{ a }}</span>{% endfor %}</td>
+    <td>≤ {{ t.max_safe_cm }} cm</td>
+    <td>#{{ t.source_version_id }}</td>
+  </tr>
+  {% endfor %}
+</table>
+<p class="muted">潮汐信息的坐标、时区和适用范围必须与地点匹配；数据缺测时不得推断潮间带可通行。</p>
+</div>
+
+<h2>开放资料（Open Data）</h2>
+<div class="grid">
+  {% for d in open_datasets %}
+  <div class="card">
+    <h3>{{ d.title }}</h3>
+    <div class="muted">{{ d.format }} · {{ d.license }} · {{ d.rows }} 行</div>
+    <div class="tagrow">
+      {% if d.id == 'places' %}<a class="btn" href="/open-data/places.csv">下载 CSV</a>{% endif %}
+      {% if d.id == 'ferries' %}<a class="btn" href="/open-data/ferries.json">下载 JSON</a>{% endif %}
+      {% if d.id == 'tides' %}<span class="muted">API: GET /api（见设计文档）</span>{% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<h2>数据来源（当前生效版本）</h2>
+<div class="card">
+<table>
+  <tr><th>来源</th><th>版本</th><th>接收时间</th></tr>
+  {% for s in sources %}
+  <tr><td>{{ s.source_key }}</td><td>{{ s.revision }}</td><td class="coord">{{ s.received_at }}</td></tr>
+  {% endfor %}
+</table>
+</div>
+{% endblock %}

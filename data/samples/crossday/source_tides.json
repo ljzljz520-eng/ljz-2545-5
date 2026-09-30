@@ -1,0 +1,28 @@
+{
+  "source_key": "tide.marine_bureau",
+  "revision": "2026-10-03-r1",
+  "kind": "tides",
+  "priority": 10,
+  "payload": {
+    "tides": [
+      {
+        "tide_point_code": "TP-REEF-01",
+        "observed_at": "2026-10-03T06:10:00+08:00",
+        "level_cm": 150,
+        "kind": "high"
+      },
+      {
+        "tide_point_code": "TP-REEF-01",
+        "observed_at": "2026-10-03T12:20:00+08:00",
+        "level_cm": 80,
+        "kind": "low"
+      },
+      {
+        "tide_point_code": "TP-REEF-01",
+        "observed_at": "2026-10-03T18:35:00+08:00",
+        "level_cm": 165,
+        "kind": "high"
+      }
+    ]
+  }
+}

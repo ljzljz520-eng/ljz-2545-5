@@ -1,0 +1,52 @@
+{
+  "source_key": "ferry.official",
+  "revision": "2026-10-03-r2-night",
+  "kind": "mixed",
+  "priority": 10,
+  "payload": {
+    "ferries": [
+      {
+        "mode": "ferry",
+        "route_code": "F1",
+        "date": "2026-10-03",
+        "depart_place": "MAIN_DOCK",
+        "arrive_place": "ISLAND_DOCK",
+        "depart_at": "2026-10-03T22:30:00+08:00",
+        "arrive_at": "2026-10-03T23:20:00+08:00",
+        "status": "scheduled"
+      },
+      {
+        "mode": "ferry",
+        "route_code": "F2",
+        "date": "2026-10-03",
+        "depart_place": "ISLAND_DOCK",
+        "arrive_place": "MAIN_DOCK",
+        "depart_at": "2026-10-03T16:30:00+08:00",
+        "arrive_at": "2026-10-03T17:15:00+08:00",
+        "status": "scheduled"
+      }
+    ],
+    "shuttles": [
+      {
+        "mode": "shuttle",
+        "route_code": "S1",
+        "date": "2026-10-03",
+        "depart_place": "ISLAND_DOCK",
+        "arrive_place": "LIGHTHOUSE",
+        "depart_at": "2026-10-04T00:15:00+08:00",
+        "arrive_at": "2026-10-04T00:40:00+08:00",
+        "status": "scheduled"
+      },
+      {
+        "mode": "shuttle",
+        "route_code": "S2",
+        "date": "2026-10-03",
+        "depart_place": "LIGHTHOUSE",
+        "arrive_place": "ISLAND_DOCK",
+        "depart_at": "2026-10-03T15:40:00+08:00",
+        "arrive_at": "2026-10-03T15:55:00+08:00",
+        "status": "scheduled"
+      }
+    ]
+  }
+}

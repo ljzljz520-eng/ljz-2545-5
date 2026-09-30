@@ -1,0 +1,65 @@
+:root{
+  --navy:#0e2a47; --deep:#133b5c; --sea:#2a6f97; --foam:#e8f1f5;
+  --amber:#f4a259; --reef:#52796f; --red:#c1121f; --ink:#1d2b36; --muted:#5f7181;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--ink);background:#f7fafb;line-height:1.6}
+.topbar{background:linear-gradient(135deg,var(--navy),var(--deep));color:#fff;padding:14px 24px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.brand{font-size:20px;font-weight:700;letter-spacing:1px}
+.beam{color:var(--amber)}
+.topbar nav a{color:#cfe3ee;text-decoration:none;margin-left:18px;font-size:14px}
+.topbar nav a:hover{color:#fff}
+.container{max-width:1080px;margin:26px auto;padding:0 18px}
+h1{color:var(--navy);font-size:26px}
+h2{color:var(--deep);border-left:5px solid var(--amber);padding-left:10px;margin-top:34px}
+h3{color:var(--sea);margin-bottom:6px}
+.card{background:#fff;border:1px solid #dce6ec;border-radius:12px;padding:18px 20px;margin:14px 0;
+  box-shadow:0 2px 10px rgba(14,42,71,.05)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600}
+.badge.feasible,.badge.locked{background:#d9e8dd;color:#24572e}
+.badge.infeasible{background:#f8d7da;color:var(--red)}
+.badge.pending_adjustment{background:#fdecd5;color:#9c5a13}
+.badge.proposed{background:#e6edf2;color:var(--deep)}
+.muted{color:var(--muted);font-size:13px}
+.timeline{position:relative;margin:18px 0 18px 10px;padding-left:26px;border-left:3px solid #cfe0e8}
+.seg{position:relative;margin:0 0 14px}
+.seg::before{content:"";position:absolute;left:-34px;top:6px;width:14px;height:14px;border-radius:50%;
+  background:var(--sea);border:3px solid #fff;box-shadow:0 0 0 2px var(--sea)}
+.seg.infeasible::before{background:var(--red);box-shadow:0 0 0 2px var(--red)}
+.seg.pending_adjustment::before{background:var(--amber);box-shadow:0 0 0 2px var(--amber)}
+.seg.locked::before{background:var(--reef);box-shadow:0 0 0 2px var(--reef)}
+.conn{margin:-6px 0 10px -8px;font-size:13px;color:var(--muted)}
+.conn.bad{color:var(--red);font-weight:600}
+.conn.cross{color:#8a5a00;font-weight:600}
+.reason{background:#fdf0f1;border-left:4px solid var(--red);padding:8px 12px;border-radius:6px;
+  margin:8px 0;font-size:14px}
+.knock{background:#fff6e9;border-left:4px solid var(--amber);padding:8px 12px;border-radius:6px;
+  margin:8px 0;font-size:13px;color:#8a5a00}
+table{width:100%;border-collapse:collapse;font-size:13px;background:#fff;border-radius:10px;overflow:hidden}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #e7eef2;vertical-align:top}
+th{background:var(--foam);color:var(--deep)}
+button,.btn{background:var(--sea);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;
+  cursor:pointer;text-decoration:none;display:inline-block}
+button:hover{background:var(--deep)}
+button.ghost{background:#eef4f7;color:var(--deep)}
+button.warn{background:var(--amber);color:#3d2a0f}
+button:disabled{opacity:.5;cursor:not-allowed}
+input,select{padding:8px 10px;border:1px solid #c9d7df;border-radius:8px;font-size:13px}
+.pill{font-size:11px;background:var(--foam);color:var(--deep);border-radius:6px;padding:1px 7px;margin-right:4px}
+.notice{background:#fdf6e3;border:1px solid #e8d9a0;border-radius:10px;padding:12px 14px;font-size:13px}
+.freeze{font-size:14px}
+.freeze .big{font-size:28px;color:var(--navy);font-weight:700}
+pre{background:#0e2a47;color:#dcecf4;padding:12px;border-radius:8px;overflow:auto;font-size:12px}
+.docs img{max-width:100%}
+.docs h2{margin-top:26px}
+.docs code{background:#eef3f6;padding:1px 5px;border-radius:4px;font-size:13px}
+.docs pre code{background:transparent;padding:0}
+.alt{border:1px dashed #b9ccd6;border-radius:8px;padding:8px 12px;margin:6px 0;font-size:13px;
+  display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+details{margin:6px 0}
+summary{cursor:pointer;font-size:13px;color:var(--sea)}
+.coord{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted)}
+.tagrow{margin-top:6px}

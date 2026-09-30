@@ -1,0 +1,87 @@
+{
+  "source_key": "places.island_bureau",
+  "revision": "2026-09-20-r1",
+  "kind": "places",
+  "priority": 20,
+  "payload": {
+    "places": [
+      {
+        "code": "MAIN_DOCK",
+        "name": "大陆码头",
+        "kind": "dock",
+        "lat": 26.012,
+        "lon": 119.71,
+        "timezone": "Asia/Shanghai"
+      },
+      {
+        "code": "ISLAND_DOCK",
+        "name": "海岛码头",
+        "kind": "dock",
+        "lat": 26.075,
+        "lon": 119.78,
+        "timezone": "Asia/Shanghai"
+      },
+      {
+        "code": "LIGHTHOUSE",
+        "name": "北礁灯塔",
+        "name_en": "Beijiao Lighthouse",
+        "kind": "lighthouse",
+        "lat": 26.0833,
+        "lon": 119.7866,
+        "timezone": "Asia/Shanghai",
+        "story": "北礁灯塔建于 1898 年，黑白横纹塔身高 23 米，至今为闽东海路指引夜航。",
+        "viewpoints": [
+          {
+            "code": "LH_VP1",
+            "name": "灯塔环台",
+            "desc": "360° 海景，可远眺五虎礁与大陆岸线。"
+          },
+          {
+            "code": "LH_VP2",
+            "name": "灯室",
+            "desc": "保留旋转透镜，每日 10:30 有讲解。"
+          }
+        ]
+      },
+      {
+        "code": "REEF",
+        "name": "五虎礁潮间带",
+        "kind": "reef",
+        "lat": 26.087,
+        "lon": 119.79,
+        "timezone": "Asia/Shanghai",
+        "tide_point_code": "TP-REEF-01",
+        "story": "退潮时露出五座犬牙状礁岩，潮池可见藤壶、小蟹与石莼。须低潮且水位低于安全线方可步行进入。"
+      },
+      {
+        "code": "INFO_HUT",
+        "name": "导览站",
+        "kind": "information",
+        "lat": 26.0761,
+        "lon": 119.7812,
+        "timezone": "Asia/Shanghai"
+      },
+      {
+        "code": "NIGHT_STOP",
+        "name": "码头夜间接驳点",
+        "kind": "shuttle_stop",
+        "lat": 26.0123,
+        "lon": 119.7104,
+        "timezone": "Asia/Shanghai"
+      }
+    ],
+    "tide_points": [
+      {
+        "code": "TP-REEF-01",
+        "name": "五虎礁验潮站",
+        "lat": 26.086,
+        "lon": 119.789,
+        "timezone": "Asia/Shanghai",
+        "applies_to": [
+          "REEF"
+        ],
+        "max_safe_cm": 120
+      }
+    ]
+  }
+}

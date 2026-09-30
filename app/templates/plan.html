@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}行程 · 海岛灯塔导览站{% endblock %}
+{% block body %}
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+  <h1 style="margin:0">行程界面</h1>
+  <div>
+    <input id="planDate" value="2026-10-03" size="10">
+    <button onclick="generateStatic()">一次生成静态行程</button>
+    <button class="warn" onclick="recompute()">数据变更后局部重算</button>
+  </div>
+</div>
+
+{% if not p %}
+<div class="card">暂无行程，点击「一次生成静态行程」。</div>
+{% else %}
+<div class="card" id="planHead">
+  <b>行程 #{{ p.plan.id }}</b> · 日期 {{ p.plan.travel_date }} ·
+  生成模式：<span class="pill">{{ p.plan.generated_mode }}</span> ·
+  状态 <span class="pill">{{ p.plan.status }}</span>
+  <div class="muted">基线来源版本：{{ p.plan.based_on_versions }}</div>
+</div>
+
+<div class="timeline" id="timeline">
+  {% for s in p.segments %}
+  <div class="seg {{ s.state }}" id="seg-{{ s.id }}">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <div>
+          <span class="badge {{ s.state }}">
+            {% if s.state=='locked' %}已锁定{% elif s.state=='feasible' %}可行{% elif s.state=='infeasible' %}不可行{% elif s.state=='pending_adjustment' %}待调整{% else %}拟定{% endif %}
+          </span>
+          <b>{{ loop.index }}. {{ s.title }}</b>
+          <span class="pill">{{ s.kind }}</span>
+        </div>
+        <div class="coord">
+          {% if s.starts_at %}{{ s.starts_at[11:16] }} → {{ s.ends_at[11:16] }}{% else %}时间未定{% endif %}
+        </div>
+      </div>
+      {% if s.infeasible_reason %}<div class="reason">✗ {{ s.infeasible_reason }}
+        <div class="muted" style="margin-top:4px">原因码：{% for c in s.reason_codes %}<span class="pill">{{ c }}</span>{% endfor %}</div>
+      </div>{% endif %}
+
+      {% if s.alternatives %}
+      <details><summary>替代候选（{{ s.alternatives|length }}）</summary>
+        {% for a in s.alternatives %}
+        <div class="alt">
+          <span>{{ a.title }} · {{ a.starts_at.strftime('%H:%M') if a.starts_at else '' }} →
+                {{ a.ends_at.strftime('%H:%M') if a.ends_at else '' }}
+                {% if a.chosen %}<b class="muted">（已采用）</b>{% endif %}</span>
+          <button class="ghost" onclick="applyAlt({{ s.id }}, {{ a.id }})">采用候选</button>
+        </div>
+        {% endfor %}
+      </details>
+      {% endif %}
+
+      <div style="margin-top:8px">
+        <button class="ghost" onclick="toggleLock({{ s.id }}, {{ 'false' if s.locked else 'true' }})">
+          {{ '解锁段' if s.locked else '锁定段' }}
+        </button>
+        <button class="ghost" onclick="showTrace({{ s.id }})">追溯该建议采用的条件</button>
+      </div>
+    </div>
+  </div>
+
+  {% set conn = p.connections[loop.index0] if loop.index0 < p.connections|length else none %}
+  {% if conn %}
+  <div class="conn {{ 'bad' if not conn.feasible else ('cross' if conn.cross_day else '') }}">
+    ↓ {% if conn.cross_day %}🌙 跨日接驳 · {% endif %}{{ conn.detail }}
+    {% if conn.knock_on %}<div class="knock">↻ 连带影响：{{ conn.knock_on_detail or '上游变更已传导至本接驳' }}</div>{% endif %}
+  </div>
+  {% endif %}
+  {% endfor %}
+</div>
+
+{% if p.impacts %}
+<h2>影响关系（数据变更 → 段/接驳）</h2>
+<div class="card">
+<table>
+  <tr><th>变更类型</th><th>影响</th><th>来源</th><th>说明</th></tr>
+  {% for i in p.impacts %}
+  <tr><td>{{ i.change_type }}</td><td>{{ i.effect }}</td>
+      <td class="coord">{{ i.source_key }}<br>{{ i.revision }}</td><td>{{ i.detail }}</td></tr>
+  {% endfor %}
+</table>
+</div>
+{% endif %}
+{% endif %}
+
+<div class="card" id="traceBox" style="display:none">
+  <h3 style="margin-top:0">建议条件追溯</h3>
+  <pre id="traceContent"></pre>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+let planId = {{ plan_id or 'null' }};
+async function api(url, method='GET', body){
+  const r = await fetch(url, {method, headers:{'Content-Type':'application/json'},
+    body: body?JSON.stringify(body):undefined});
+  return r.json();
+}
+async function generateStatic(){
+  const date = document.getElementById('planDate').value;
+  const d = await api('/api/plans/generate','POST',{date});
+  location.href = '/plan?plan_id='+d.plan_id;
+}
+async function recompute(){
+  if(!planId){ alert('请先生成行程'); return; }
+  const d = await api(`/api/plans/${planId}/recompute`,'POST',{});
+  alert('局部重算：' + (d.changed ? ('直接段 '+(d.direct_slots||[]).join(', ')+'；锁定阻挡 '+(d.locked_blocked||[]).length) : d.reason||'无变更'));
+  location.reload();
+}
+async function toggleLock(id, lock){
+  await api(`/api/segments/${id}/lock`,'POST',{locked: lock==='true' || lock===true});
+  location.reload();
+}
+async function applyAlt(segId, altId){
+  await api(`/api/segments/${segId}/alternative/${altId}`,'POST');
+  location.reload();
+}
+async function showTrace(id){
+  const d = await api('/api/trace/'+id);
+  document.getElementById('traceBox').style.display='block';
+  document.getElementById('traceContent').textContent = JSON.stringify(d,null,2);
+  document.getElementById('traceBox').scrollIntoView({behavior:'smooth'});
+}
+</script>
+{% endblock %}

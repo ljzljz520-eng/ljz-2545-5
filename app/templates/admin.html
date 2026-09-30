@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}后台 · 海岛灯塔导览站{% endblock %}
+{% block body %}
+<h1>数据后台</h1>
+<p class="muted">后台从可替换示例数据源接收班次与封闭记录；PostgreSQL 保存来源版本及影响关系。</p>
+
+<div class="grid">
+  <div class="card">
+    <h3>① 从示例目录接收</h3>
+    <select id="scenario">
+      <option>data/samples/default</option>
+      <option>data/samples/ferry_cancel</option>
+      <option>data/samples/conflict</option>
+      <option>data/samples/coord_change</option>
+      <option>data/samples/crossday</option>
+    </select>
+    <button onclick="ingestFile()">接收目录</button>
+  </div>
+  <div class="card">
+    <h3>② 推送来源包（在线适配器）</h3>
+    <p class="muted">POST /api/admin/ingest-push，下方快速推送一条船班取消：</p>
+    <button class="warn" onclick="pushCancel()">推送 F1 取消</button>
+  </div>
+  <div class="card">
+    <h3>③ 旧缓存回滚</h3>
+    <input id="rbSource" value="ferry.official" size="18">
+    <input id="rbRevision" placeholder="目标 revision（留空=上一版）" size="24">
+    <button onclick="rollback()">回滚并重算</button>
+  </div>
+  <div class="card">
+    <h3>④ 冻结离线包</h3>
+    <input id="bundleDate" value="2026-10-03" size="12">
+    <button onclick="makeBundle()">生成离线包</button>
+  </div>
+</div>
+
+<h2>来源版本（PostgreSQL）</h2>
+<div class="card">
+<table>
+  <tr><th>#</th><th>来源</th><th>版本</th><th>优先级</th><th>接收时间</th><th>被取代</th></tr>
+  {% for v in versions %}
+  <tr><td>{{ v.id }}</td><td>{{ v.source_key }}</td><td>{{ v.revision }}</td>
+      <td>{{ v.priority }}</td><td class="coord">{{ v.received_at }}</td>
+      <td>{% if v.superseded_by %}<span class="pill">→ #{{ v.superseded_by }}</span>{% else %}<b>当前</b>{% endif %}</td></tr>
+  {% endfor %}
+</table>
+</div>
+
+<h2>来源矛盾裁决留痕</h2>
+<div class="card">
+{% if not conflicts %}<p class="muted">暂无矛盾记录。推送冲突来源后将在此显示，高优先级来源获胜并保留双方快照。</p>{% endif %}
+<table>
+  <tr><th>#</th><th>实体</th><th>键</th><th>胜出版本</th><th>败版</th><th>理由</th><th>时间</th></tr>
+  {% for c in conflicts %}
+  <tr><td>{{ c.id }}</td><td>{{ c.entity_type }}</td><td class="coord">{{ c.entity_key }}</td>
+      <td>#{{ c.winner_version_id }}</td><td>#{{ c.loser_version_id }}</td>
+      <td>{{ c.reason }}</td><td class="coord">{{ c.detected_at }}</td></tr>
+  {% endfor %}
+</table>
+</div>
+
+<h2>离线包登记</h2>
+<div class="card">
+{% if not bundles %}<p class="muted">尚未冻结。</p>{% endif %}
+{% for b in bundles %}
+<div class="alt"><span>离线包 #{{ b.id }} · 覆盖 {{ b.covers_date }} · 冻结于 {{ b.frozen_at }}
+  {% if b.gap_sources %}<b style="color:#9c5a13">；更新缺口：{{ b.gap_sources|join(', ') }}</b>{% endif %}</span>
+  <a class="btn" href="/offline?date={{ b.covers_date }}">查看</a></div>
+{% endfor %}
+</div>
+
+<pre id="out" style="display:none"></pre>
+{% endblock %}
+{% block scripts %}
+<script>
+async function api(url, method='GET', body){
+  const r = await fetch(url,{method,headers:{'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  return r.json();
+}
+function show(d){ const el=document.getElementById('out'); el.style.display='block'; el.textContent=JSON.stringify(d,null,2); }
+async function ingestFile(){ show(await api('/api/admin/ingest-file','POST',{path:document.getElementById('scenario').value})); }
+async function pushCancel(){
+  const body = {source_key:'ferry.official', revision:'2026-10-03-r3', kind:'mixed', priority:10,
+    payload:{ferries:[{mode:'ferry',route_code:'F1',date:'2026-10-03',depart_place:'MAIN_DOCK',
+      arrive_place:'ISLAND_DOCK',depart_at:'2026-10-03T08:00:00+08:00',arrive_at:'2026-10-03T08:45:00+08:00',
+      status:'cancelled'}], shuttles:[]}};
+  show(await api('/api/admin/ingest-push','POST',body));
+}
+async function rollback(){
+  const rev = document.getElementById('rbRevision').value;
+  show(await api('/api/admin/rollback','POST',{source_key:document.getElementById('rbSource').value,to_revision:rev||null}));
+}
+async function makeBundle(){ show(await api('/api/admin/offline-bundle','POST',{date:document.getElementById('bundleDate').value})); }
+</script>
+{% endblock %}
